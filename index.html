@@ -35,7 +35,6 @@
             height: 100%;
             pointer-events: none;
             overflow: hidden;
-            z-index: 1;
         }
 
         .heart {
@@ -43,7 +42,7 @@
             width: 30px;
             height: 30px;
             animation: float 10s infinite;
-            opacity: 0.8;
+            opacity: 0.6;
         }
 
         .heart svg {
@@ -57,10 +56,10 @@
                 opacity: 0;
             }
             10% {
-                opacity: 0.8;
+                opacity: 0.6;
             }
             90% {
-                opacity: 0.8;
+                opacity: 0.6;
             }
             100% {
                 transform: translateY(-10vh) rotate(360deg);
@@ -118,6 +117,8 @@
             transition: transform 0.3s ease, box-shadow 0.3s ease;
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
             min-width: 140px;
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
         }
 
         #yesBtn {
@@ -138,7 +139,7 @@
             box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
         }
 
-        button:active {
+        #yesBtn:active {
             transform: scale(0.95);
         }
 
@@ -149,14 +150,13 @@
             left: 50%;
             transform: translate(-50%, -50%);
             background: white;
-            padding: 60px 40px;
+            padding: 60px;
             border-radius: 30px;
             box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
             text-align: center;
             z-index: 1000;
             animation: popIn 0.5s ease;
-            max-width: 95%;
-            overflow: auto;
+            max-width: 90%;
         }
 
         @keyframes popIn {
@@ -175,33 +175,22 @@
         }
 
         .celebration img {
-            max-width: 200%;
-            width: 200%;
+            max-width: 800px;
+            width: 100%;
             border-radius: 15px;
             margin-top: 20px;
         }
 
-        @media (max-width: 600px) {
-            h1 {
-                font-size: 28px;
-            }
-            
-            button {
-                padding: 15px 30px;
-                font-size: 20px;
-                min-width: 120px;
-            }
-            
-            .celebration h2 {
-                font-size: 36px;
-            }
+        .celebration p {
+            font-size: 24px;
+            color: #666;
         }
     </style>
 </head>
 <body>
     <div class="hearts" id="hearts"></div>
     
-    <div class="container" id="mainContainer">
+    <div class="container">
         <div class="emoji">
             <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                 <path d="M50,90 C50,90 10,60 10,40 C10,25 20,15 30,15 C40,15 45,20 50,30 C55,20 60,15 70,15 C80,15 90,25 90,40 C90,60 50,90 50,90 Z" 
@@ -214,8 +203,8 @@
         </div>
         <h1>Smoosh, will you be my Valentine?</h1>
         <div class="button-container">
-            <button id="yesBtn" onmouseenter="growYesButton()" onclick="showCelebration()">Yes! 💕</button>
-            <button id="noBtn" onmousemove="moveNoButtonOnHover(event)" onclick="return false;" ontouchstart="moveNoButtonOnTouch(event)">No</button>
+            <button id="yesBtn">Yes! 💕</button>
+            <button id="noBtn">No</button>
         </div>
     </div>
 
@@ -227,92 +216,121 @@
     <script>
         // Create floating hearts background
         function createHearts() {
-            var heartsContainer = document.getElementById('hearts');
-            for (var i = 0; i < 15; i++) {
-                var heart = document.createElement('div');
+            const heartsContainer = document.getElementById('hearts');
+            for (let i = 0; i < 15; i++) {
+                const heart = document.createElement('div');
                 heart.className = 'heart';
-                heart.innerHTML = '<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><path d="M50,90 C50,90 10,60 10,40 C10,25 20,15 30,15 C40,15 45,20 50,30 C55,20 60,15 70,15 C80,15 90,25 90,40 C90,60 50,90 50,90 Z" fill="none" stroke="#e91e63" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+                heart.innerHTML = `
+                    <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M50,90 C50,90 10,60 10,40 C10,25 20,15 30,15 C40,15 45,20 50,30 C55,20 60,15 70,15 C80,15 90,25 90,40 C90,60 50,90 50,90 Z" 
+                              fill="none" 
+                              stroke="#e91e63" 
+                              stroke-width="4" 
+                              stroke-linecap="round" 
+                              stroke-linejoin="round"/>
+                    </svg>
+                `;
                 heart.style.left = Math.random() * 100 + '%';
                 heart.style.animationDelay = Math.random() * 10 + 's';
-                var size = Math.random() * 20 + 20;
+                const size = Math.random() * 20 + 20;
                 heart.style.width = size + 'px';
                 heart.style.height = size + 'px';
                 heartsContainer.appendChild(heart);
             }
         }
-        
-        // Initialize
         createHearts();
 
-        var currentScale = 1;
-        var isNoButtonMoving = false;
-        var yesBtn = document.getElementById('yesBtn');
-        var noBtn = document.getElementById('noBtn');
+        const yesBtn = document.getElementById('yesBtn');
+        const noBtn = document.getElementById('noBtn');
+        const celebration = document.getElementById('celebration');
+        
+        let currentScale = 1;
+        let isNoButtonMoving = false;
 
-        // Yes button grows on hover
-        function growYesButton() {
+        // Yes button grows on hover (desktop)
+        yesBtn.addEventListener('mouseenter', () => {
             currentScale = currentScale * 1.5;
-            yesBtn.style.transform = 'scale(' + currentScale + ')';
-        }
+            yesBtn.style.transform = `scale(${currentScale})`;
+        });
 
-        // Show celebration
-        function showCelebration() {
-            document.getElementById('celebration').style.display = 'block';
-            document.getElementById('mainContainer').style.display = 'none';
-        }
+        // Yes button grows on touch (mobile)
+        yesBtn.addEventListener('touchstart', (e) => {
+            currentScale = currentScale * 1.5;
+            yesBtn.style.transform = `scale(${currentScale})`;
+        }, { passive: true });
 
-        // Move No button to random position
+        // Yes button click
+        yesBtn.addEventListener('click', () => {
+            celebration.style.display = 'block';
+            document.querySelector('.container').style.display = 'none';
+        });
+
+        yesBtn.addEventListener('touchend', (e) => {
+            e.preventDefault();
+            celebration.style.display = 'block';
+            document.querySelector('.container').style.display = 'none';
+        });
+
+        // Function to move the No button to a random position
         function moveNoButtonRandom(eventX, eventY) {
             if (isNoButtonMoving) return;
             isNoButtonMoving = true;
 
-            var btnRect = noBtn.getBoundingClientRect();
-            var maxX = window.innerWidth - btnRect.width - 40;
-            var maxY = window.innerHeight - btnRect.height - 40;
+            const btnRect = noBtn.getBoundingClientRect();
             
-            var newX = Math.random() * maxX;
-            var newY = Math.random() * maxY;
+            // Calculate random new position
+            const maxX = window.innerWidth - btnRect.width - 40;
+            const maxY = window.innerHeight - btnRect.height - 40;
             
-            // Make sure it's not too close to current position
-            var attempts = 0;
-            while (Math.sqrt(Math.pow(eventX - newX, 2) + Math.pow(eventY - newY, 2)) < 150 && attempts < 10) {
+            let newX = Math.random() * maxX;
+            let newY = Math.random() * maxY;
+            
+            // Make sure it's not too close to current touch/click position
+            while (Math.sqrt(Math.pow(eventX - newX, 2) + Math.pow(eventY - newY, 2)) < 150) {
                 newX = Math.random() * maxX;
                 newY = Math.random() * maxY;
-                attempts++;
             }
             
             noBtn.style.position = 'fixed';
             noBtn.style.left = newX + 'px';
             noBtn.style.top = newY + 'px';
 
-            setTimeout(function() {
+            setTimeout(() => {
                 isNoButtonMoving = false;
             }, 300);
         }
 
-        // No button dodges cursor (desktop)
-        function moveNoButtonOnHover(e) {
-            var btnRect = noBtn.getBoundingClientRect();
-            var btnCenterX = btnRect.left + btnRect.width / 2;
-            var btnCenterY = btnRect.top + btnRect.height / 2;
+        // No button dodges the cursor (desktop)
+        function moveNoButton(e) {
+            const btnRect = noBtn.getBoundingClientRect();
+            const btnCenterX = btnRect.left + btnRect.width / 2;
+            const btnCenterY = btnRect.top + btnRect.height / 2;
             
-            var distance = Math.sqrt(
+            const distance = Math.sqrt(
                 Math.pow(e.clientX - btnCenterX, 2) + 
                 Math.pow(e.clientY - btnCenterY, 2)
             );
             
+            // If cursor is within 100px of the button
             if (distance < 100) {
                 moveNoButtonRandom(e.clientX, e.clientY);
             }
         }
 
-        // No button moves on touch (mobile)
-        function moveNoButtonOnTouch(e) {
+        // Desktop: mouse move
+        document.addEventListener('mousemove', moveNoButton);
+
+        // Mobile: touch events
+        noBtn.addEventListener('touchstart', (e) => {
             e.preventDefault();
-            var touch = e.touches[0];
+            const touch = e.touches[0];
             moveNoButtonRandom(touch.clientX, touch.clientY);
-            return false;
-        }
+        });
+
+        // Prevent clicking the No button (just for fun)
+        noBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+        });
     </script>
 </body>
 </html>
